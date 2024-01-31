@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joker_teller</title>
+    <link rel="icon" type="image/png" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRH4Odoe4Y5zJWnF0ucpB0jwywqOFKUHe-qDw&usqp=CAU">
+    <!-- style -->
+    <style>
+    html {
+  box-sizing: border-box;
+}
+
+body{
+  margin: 0;
+  background-color: #48badd;
+}
+
+.container{
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: url('https://github.com/Vizosul-Natso/SourceFile/blob/main/robot.gif?raw=true');
+  background-position: left center;
+  background-repeat: no-repeat;
+}
+button{
+  cursor: pointer;
+  outline: none;
+  width: 200px;
+  height: 50px;
+  font-family:  Calibri, sans-serif;
+  color: whitesmoke;
+  background-color: rgb(219, 21, 87);
+  border: none;
+  border-radius: 30px;
+  box-shadow: 2px 2px 8px 10px rgba(0, 0, 0, 0.6);
+}
+
+button:hover{
+  filter: brightness(90%);
+}
+button:active{
+  transform: scale(0.9);
+}
+button:disabled{
+  cursor: default;
+  filter: opacity(0);
+}
+#text{
+  color: black;
+  background-color: #fff;
+  padding: 7px;
+  margin: 20px;
+
+}
+
+@media screen and (max-width: 800px){
+  .container{
+    background-position:center center;
+
+  }
+  button{
+    margin-top: -60vh;
+  }
+  
+}
+
+    </style>
+</head>
+<body>
+  <div class="container">
+    <button id="button" >Tell Me A Joke</button>
+    <audio id="audio" controls hidden></audio>
+    <br>
+    <div id="text" hidden>text</div>
+  </div>
+
+
+    <!-- Script -->
+
+    <script>
+const button = document.getElementById('button');
+const audioElement = document.getElementById('audio');
+const text = document.getElementById('text');
+
+// VoiceRSS Javascript SDK
+const VoiceRSS={speech:function(e){this._validate(e),this._request(e)},_validate:function(e){if(!e)throw"The settings are undefined";if(!e.key)throw"The API key is undefined";if(!e.src)throw"The text is undefined";if(!e.hl)throw"The language is undefined";if(e.c&&"auto"!=e.c.toLowerCase()){var a=!1;switch(e.c.toLowerCase()){case"mp3":a=(new Audio).canPlayType("audio/mpeg").replace("no","");break;case"wav":a=(new Audio).canPlayType("audio/wav").replace("no","");break;case"aac":a=(new Audio).canPlayType("audio/aac").replace("no","");break;case"ogg":a=(new Audio).canPlayType("audio/ogg").replace("no","");break;case"caf":a=(new Audio).canPlayType("audio/x-caf").replace("no","")}if(!a)throw"The browser does not support the audio codec "+e.c}},_request:function(e){var a=this._buildRequest(e),t=this._getXHR();t.onreadystatechange=function(){if(4==t.readyState&&200==t.status){if(0==t.responseText.indexOf("ERROR"))throw t.responseText;audioElement.src=t.responseText,audioElement.play()}},t.open("POST","https://api.voicerss.org/",!0),t.setRequestHeader("Content-Type","application/x-www-form-urlencoded; charset=UTF-8"),t.send(a)},_buildRequest:function(e){var a=e.c&&"auto"!=e.c.toLowerCase()?e.c:this._detectCodec();return"key="+(e.key||"")+"&src="+(e.src||"")+"&hl="+(e.hl||"")+"&r="+(e.r||"")+"&c="+(a||"")+"&f="+(e.f||"")+"&ssml="+(e.ssml||"")+"&b64=true"},_detectCodec:function(){var e=new Audio;return e.canPlayType("audio/mpeg").replace("no","")?"mp3":e.canPlayType("audio/wav").replace("no","")?"wav":e.canPlayType("audio/aac").replace("no","")?"aac":e.canPlayType("audio/ogg").replace("no","")?"ogg":e.canPlayType("audio/x-caf").replace("no","")?"caf":""},_getXHR:function(){try{return new XMLHttpRequest}catch(e){}try{return new ActiveXObject("Msxml3.XMLHTTP")}catch(e){}try{return new ActiveXObject("Msxml2.XMLHTTP.6.0")}catch(e){}try{return new ActiveXObject("Msxml2.XMLHTTP.3.0")}catch(e){}try{return new ActiveXObject("Msxml2.XMLHTTP")}catch(e){}try{return new ActiveXObject("Microsoft.XMLHTTP")}catch(e){}throw"The browser does not support HTTP request"}};
+
+//disable/enable button
+
+function toggleButton() {
+    button.disabled = !button.disabled;
+    text.hidden = !text.hidden;
+}
+
+//get jokes
+
+//passing jokes to voice rss api
+
+function tellMe(joke){
+    console.log('tell me a joke ', joke);
+    VoiceRSS.speech({
+        key: '4363dfdfbf4d4d1480a8727395075a96',
+        src: joke,
+        hl: 'en-us',
+        v: 'Linda',
+        r: -0.4, 
+        c: 'mp3',
+        f: '44khz_16bit_stereo',
+        ssml: false
+    });
+}
+
+async function getJokes() {
+    let joke = '';
+    const apiUrl = 'https://v2.jokeapi.dev/joke/Any';
+    try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        if(data.setup){
+            joke = `${data.setup} ... ${data.delivery}`;
+        }else{
+            joke = data.joke;
+        }
+        
+        tellMe(joke);
+        text.innerHTML=joke;
+        //disable button
+        toggleButton();
+    } catch (error) {
+        console.log('error',error);
+    }
+}
+
+button.addEventListener('click',getJokes);
+audioElement.addEventListener('ended', toggleButton);
+
+    </script>
+</body>
+</html>
